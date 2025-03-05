@@ -1,0 +1,32 @@
+# 🔹 File Environment (Rahasia API Keys)
+.env
+firebase-key.json
+
+# 🔹 Folder & File yang Dibuat Otomatis
+node_modules/
+package-lock.json
+yarn.lock
+
+# 🔹 Log & Cache
+npm-debug.log
+yarn-error.log
+logs/
+*.log
+debug.log
+.DS_Store
+
+# 🔹 Docker (Jika Menggunakan Docker)
+docker-compose.override.yml
+.dockerignore
+
+# 🔹 File Testing & Build
+coverage/
+dist/
+build/
+
+# 🔹 Editor/IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
