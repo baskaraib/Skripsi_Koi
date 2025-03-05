@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Kolam Koi</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <style>
+        .card { border-radius: 15px; }
+        .bg-suhu { background-color: #ff6f61; color: white; }
+        .bg-ph { background-color: #4b7bec; color: white; }
+        .chart-container { height: 250px; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">📊 Dashboard Kolam Koi</h2>
+
+        <!-- Ringkasan Data -->
+        <div class="row text-center">
+            <div class="col-md-6 mb-3">
+                <div class="card bg-suhu p-3">
+                    <h3>🌡️ Suhu: <span id="suhu-latest">-</span> °C</h3>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card bg-ph p-3">
+                    <h3>🧪 pH: <span id="ph-latest">-</span></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grafik -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h5 class="text-center">🌡️ Grafik Suhu</h5>
+                    <div class="chart-container"><canvas id="suhuChart"></canvas></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h5 class="text-center">🧪 Grafik pH</h5>
+                    <div class="chart-container"><canvas id="phChart"></canvas></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = "http://localhost:3000/api/sensor";
+        
+        // 🔹 Fungsi untuk membuat grafik
+        function createChart(ctx, label, borderColor, backgroundColor) {
+            return new Chart(ctx, {
+                type: "line",
+                data: { labels: [], datasets: [{ label, borderColor, backgroundColor, data: [], fill: true }] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { x: { title: { display: true, text: "Waktu" } }, 
+                              y: { title: { display: true, text: label } } }
+                }
+            });
+        }
+
+        // 🔹 Inisialisasi grafik suhu & pH
+        const suhuChart = createChart(document.getElementById("suhuChart").getContext("2d"), 
+                                      "Suhu (°C)", "#ff6f61", "rgba(255, 99, 132, 0.2)");
+        const phChart = createChart(document.getElementById("phChart").getContext("2d"), 
+                                    "pH", "#4b7bec", "rgba(54, 162, 235, 0.2)");
+
+        // 🔹 Fungsi untuk memperbarui data terbaru dan grafik
+        async function updateDashboard() {
+            try {
+                const response = await fetch(apiUrl);
+                const result = await response.json();
+
+                if (result.success) {
+                    const labels = [], suhuData = [], pHData = [];
+                    let latestSuhu = "-", latestPH = "-";
+
+                    result.data.forEach(entry => {
+                        labels.push(new Date(entry.waktu).toLocaleTimeString());
+                        suhuData.push(entry.suhu);
+                        pHData.push(entry.pH);
+                        latestSuhu = entry.suhu;
+                        latestPH = entry.pH;
+                    });
+
+                    document.getElementById("suhu-latest").innerText = latestSuhu + "°C";
+                    document.getElementById("ph-latest").innerText = latestPH;
+
+                    // Update data di grafik
+                    suhuChart.data.labels = phChart.data.labels = labels;
+                    suhuChart.data.datasets[0].data = suhuData;
+                    phChart.data.datasets[0].data = pHData;
+                    suhuChart.update();
+                    phChart.update();
+                }
+            } catch (error) {
+                console.error("❌ Error mengambil data:", error);
+            }
+        }
+
+        // 🔹 Update setiap 5 detik
+        setInterval(updateDashboard, 5000);
+        updateDashboard();
+    </script>
+
+</body>
+</html>
