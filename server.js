@@ -22,7 +22,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
 // 🔹 Koneksi ke MQTT Broker (EMQX Cloud)
 const mqtt_client = mqtt.connect(process.env.MQTT_BROKER_URL, {
